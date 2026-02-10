@@ -1,0 +1,49 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 🛒 產品裝備表 (The Armory)
+model Product {
+  // ID: 使用 UUID (例如: "PROD_001_A_JKT" 或自動生成的亂碼)
+  id           String   @id @default(uuid())
+  
+  // 核心欄位 (用來搜尋、排序、篩選)
+  title        String
+  category     String   @default("Uncategorized")
+  price        Int      @default(0)
+  is_published Boolean  @default(true) // 上架狀態
+  
+  // 圖片牆 (儲存 GCS 的網址陣列)
+  images       String[] 
+  
+  // 📦 複雜資料 (JSONB)：這裡存放 basic_info, rpg_tuning, inventory 等所有細節
+  // 這樣你就不用改原本的前端結構，直接把整包 JSON 塞進來即可！
+  details      Json?
+
+  // 時間戳記
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 🛡️ 使用者/管理員表 (The Guild Members)
+// 未來做登入驗證時會用到
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // 加密後的密碼
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+  MERCHANT
+}
