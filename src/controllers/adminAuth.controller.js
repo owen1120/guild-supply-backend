@@ -1,60 +1,74 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const prisma = require('../utils/prisma'); 
+const prisma = require('../utils/prisma');
 require('dotenv').config();
 
-const signin = async (req, res) => {
+// Open Gate (登入)
+const login = async (req, res) => {
   try {
-    const { username, password } = req.body; 
+    const { username, password } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { email: username }
     });
 
     if (!user) {
-      return res.status(401).json({ success: false, message: '找不到此帳號' });
+      return res.status(401).json({ success: false, message: '找不到此冒險者 (帳號錯誤)' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: '密碼錯誤' });
+      return res.status(401).json({ success: false, message: '咒語錯誤 (密碼錯誤)' });
     }
 
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        email: user.email, 
-        role: user.role 
-      }, 
-      process.env.JWT_SECRET, 
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // 回傳成功
     res.status(200).json({
       success: true,
-      message: '登入成功',
+      message: '大門已開啟 (登入成功)',
       token: token,
       user: {
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        name: 'Guild Master' 
       }
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: '伺服器錯誤' });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-const checkAuth = async (req, res) => {
-    res.status(200).json({ success: true, message: '驗證有效' });
+// Check License (取得個人資料)
+const getProfile = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, email: true, role: true, createdAt: true } 
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: '找不到冒險者檔案' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: '執照驗證通過',
+      user: user
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
+// Close Gate (登出)
 const logout = async (req, res) => {
-    res.status(200).json({ success: true, message: '已登出' });
+  res.status(200).json({ success: true, message: '大門已關閉 (登出成功)' });
 };
 
-module.exports = { signin, checkAuth, logout };
+module.exports = { login, getProfile, logout };
