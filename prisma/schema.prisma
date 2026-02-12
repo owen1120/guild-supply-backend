@@ -9,23 +9,38 @@ datasource db {
 
 model Product {
   id           String   @id @default(uuid())
+  title        String   
+  description  String?  
+  brand        String?  
   
-  title        String
+  price        Int      
+  stock        Int      @default(0) 
+  sku          String?  @unique 
+  
+  isPublished  Boolean  @default(true) 
+  
   category     String   @default("Uncategorized")
-  price        Int      @default(0)
-  is_published Boolean  @default(true)
+
+  ribbons      String[] 
+  options      Json?    
+  sections     Json?    
+
+  images       Json?    
+  videos       Json?    
   
-  images       String[] 
+  rpgDetails   Json?    
   
-  details      Json?
+  pricingDetail Json?   
+  preOrder     Json?    
+  
+  seo          Json?    
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  orderItems  OrderItem[]
-  cartItems   CartItem[]
-
-  articles    Article[]
+  orderItems   OrderItem[]
+  cartItems    CartItem[]
+  articles     Article[]
 }
 
 model User {
