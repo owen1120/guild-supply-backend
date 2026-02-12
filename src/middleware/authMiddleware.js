@@ -1,24 +1,51 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const prisma = require('../utils/prisma'); 
 
+// ==============================
+// 1. Verify Token (驗證登入狀態)
+// ==============================
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(403).json({ success: false, message: '拒絕訪問：未提供通行證 (Token)' });
+  const token = req.header('Authorization');
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: '拒絕訪問：請出示冒險者證明 (無 Token)' });
   }
 
-  const token = authHeader.substring(7);
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const tokenString = token.replace('Bearer ', '');
     
-    req.user = decoded;
+    const verified = jwt.verify(tokenString, process.env.JWT_SECRET);
+    
+    req.user = verified;
+    
     next();
-    
   } catch (error) {
-    return res.status(401).json({ success: false, message: '通行證無效或已過期' });
+    res.status(400).json({ success: false, message: '證明無效 (Token Error)' });
   }
 };
 
-module.exports = verifyToken;
+// ==============================
+// 2. Verify Admin (驗證管理員權限)
+// ==============================
+const verifyAdmin = async (req, res, next) => {
+  try {
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ success: false, message: '請先登入' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
+
+    if (!user || user.role !== 'ADMIN') {
+        return res.status(403).json({ success: false, message: '權限不足：此區域僅限公會長進入 (403 Forbidden)' });
+    }
+
+    next();
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: '權限驗證錯誤' });
+  }
+};
+
+module.exports = { verifyToken, verifyAdmin };
