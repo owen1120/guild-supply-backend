@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,60 +9,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==============================
+// 1. Product (商品/裝備) - 支援 RPG 數值與複雜 JSON
+// ==============================
 model Product {
-  id           String   @id @default(uuid())
-  title        String   
-  description  String?  
-  brand        String?  
+  id          String   @id @default(uuid())
+  title       String   
+  description String?  
+  brand       String?  
   
-  price        Int      
-  stock        Int      @default(0) 
-  sku          String?  @unique 
+  price       Int      
+  stock       Int      @default(0) 
+  sku         String?  @unique 
   
-  isPublished  Boolean  @default(true) 
+  isPublished Boolean  @default(true) 
   
-  category     String   @default("Uncategorized")
+  category    String   @default("Uncategorized")
 
-  ribbons      String[] 
-  options      Json?    
-  sections     Json?    
+  // --- 複雜資料結構 (JSONB) ---
+  ribbons     String[] 
+  options     Json?    
+  sections    Json?    
 
-  images       Json?    
-  videos       Json?    
+  images      Json?    
+  videos      Json?    
   
-  rpgDetails   Json?    
+  rpgDetails  Json?    
   
-  pricingDetail Json?   
-  preOrder     Json?    
+  pricingDetail Json?    
+  preOrder    Json?    
   
-  seo          Json?    
+  seo         Json?    
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  orderItems   OrderItem[]
-  cartItems    CartItem[]
-  articles     Article[]
+  // --- 關聯 ---
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  articles    Article[]
+  wishlistedBy WishlistItem[] // 被哪些人加入願望清單
 }
 
+// ==============================
+// 2. User (使用者/冒險者) - 支援個人檔案與公會數據
+// ==============================
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  password             String
+  role                 Role      @default(USER)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
+  
+  // --- Wallet ---
   points               Int       @default(0)
 
-  bookmarks            UserBookmark[]
+  // --- Identity ---
+  realName             String?   
+  codename             String?   
+  phone                String?
+  avatar               String?   
+  
+  // --- Guild Stats ---
+  class                String    @default("NOVICE")
+  rankTitle            String    @default("Iron Rookie")
+  level                Int       @default(1)
+  exp                  Int       @default(0)
+  
+  // --- Preferences ---
+  marketingConsent     Boolean   @default(false)
+  preferredActivities  String[]
+
+  // --- 關聯 ---
   addresses            Address[]
   orders               Order[]
-  coupons              UserCoupon[]
-  achievements         UserAchievement[]
-  userQuests           UserQuest[]
-
   cart                 Cart?
+  coupons              UserCoupon[]
+  userQuests           UserQuest[]
+  achievements         UserAchievement[] 
+  wishlist             WishlistItem[]    
+  bookmarks            UserBookmark[]    
 }
 
 enum Role {
@@ -69,6 +100,9 @@ enum Role {
   MERCHANT
 }
 
+// ==============================
+// 3. Logistics (物流與地址)
+// ==============================
 model Address {
   id        String   @id @default(uuid())
   userId    String
@@ -78,8 +112,10 @@ model Address {
   phone     String
   city      String
   district  String
-  detail    String
+  detail    String // 街道與樓層
   
+  isDefault Boolean @default(false) // 是否為預設地址
+
   createdAt DateTime @default(now())
 }
 
@@ -94,6 +130,7 @@ model Order {
   items     OrderItem[]
   
   createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model OrderItem {
@@ -116,9 +153,46 @@ enum OrderStatus {
   CANCELLED
 }
 
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique 
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  items     CartItem[]
+  
+  updatedAt DateTime   @updatedAt 
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity  Int     @default(1) 
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  
+  addedAt   DateTime @default(now())
+  
+  @@unique([userId, productId]) // 防止重複加入
+}
+
+// ==============================
+// 4. Marketing (優惠券)
+// ==============================
 model Coupon {
-  id          String   @id @default(uuid())
-  code        String   @unique
+  id          String      @id @default(uuid())
+  code        String      @unique
   description String
   discount    Int
   expiresAt   DateTime?
@@ -127,21 +201,25 @@ model Coupon {
 }
 
 model UserCoupon {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  couponId  String
-  coupon    Coupon   @relation(fields: [couponId], references: [id])
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id])
   
-  isUsed    Boolean  @default(false)
+  isUsed     Boolean  @default(false)
   obtainedAt DateTime @default(now())
 }
 
+// ==============================
+// 5. Gamification (成就與任務)
+// ==============================
 model Achievement {
   id          String   @id @default(uuid())
   title       String
   description String
   icon        String
+  condition   Json?    // 達成條件 (新增)
   
   users       UserAchievement[]
 }
@@ -154,6 +232,8 @@ model UserAchievement {
   achievement   Achievement @relation(fields: [achievementId], references: [id])
   
   unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId]) // 確保不重複領取
 }
 
 model Quest {
@@ -162,7 +242,7 @@ model Quest {
   description  String 
   target       Int
   rewardPoints Int         @default(0)
-    
+     
   createdAt    DateTime    @default(now())
   expiresAt    DateTime?
 
@@ -170,16 +250,17 @@ model Quest {
 }
 
 model UserQuest {
-  id        String      @id @default(uuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questId   String
-  quest     Quest       @relation(fields: [questId], references: [id])
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questId     String
+  quest       Quest       @relation(fields: [questId], references: [id])
 
-  status    QuestStatus @default(ONGOING)
-  progress  Int         @default(0)
+  status      QuestStatus @default(ONGOING)
+  progress    Int         @default(0)
+  progressDetail Json?
   
-  acceptedAt DateTime   @default(now())
+  acceptedAt  DateTime    @default(now())
   completedAt DateTime?
 }
 
@@ -190,6 +271,9 @@ enum QuestStatus {
   FAILED
 }
 
+// ==============================
+// 6. Content (文章與收藏)
+// ==============================
 model Article {
   id          String   @id @default(uuid())
   slug        String   @unique
@@ -222,25 +306,4 @@ model UserBookmark {
   createdAt DateTime @default(now())
   
   @@unique([userId, articleId]) 
-}
-
-model Cart {
-  id        String     @id @default(uuid())
-  userId    String     @unique // 一個使用者只能有一台購物車
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  items     CartItem[]
-  
-  updatedAt DateTime   @updatedAt // 記錄最後修改時間
-}
-
-model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  
-  quantity  Int      @default(1) // 購買數量
 }
