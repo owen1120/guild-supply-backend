@@ -30,6 +30,8 @@ model Product {
   // 時間戳記
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  orderItems  OrderItem[]
 }
 
 // 🛡️ 使用者/管理員表 (The Guild Members)
@@ -40,10 +42,63 @@ model User {
   password  String   // 加密後的密碼
   role      Role     @default(USER)
   createdAt DateTime @default(now())
+
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+
+  addresses            Address[]
+  orders               Order[]
 }
 
 enum Role {
   USER
   ADMIN
   MERCHANT
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  recipient String   // 收件人姓名 (冒險者代號)
+  phone     String   // 聯絡電話 (水晶球通訊碼)
+  city      String   // 城市 (ex: 王都)
+  district  String   // 區域 (ex: 商業區)
+  detail    String   // 詳細地址 (ex: 鐵匠鋪旁巷子)
+  
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status    OrderStatus @default(PENDING) // 訂單狀態
+  total     Int         @default(0)       // 總金額
+  
+  items     OrderItem[] // 買了哪些東西
+  
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity  Int     @default(1) // 買了幾個
+  price     Int     // 購買當時的單價 (避免商品漲價後訂單金額變動)
+}
+
+enum OrderStatus {
+  PENDING   // 處理中
+  PAID      // 已付款
+  SHIPPED   // 已出貨
+  COMPLETED // 已完成
+  CANCELLED // 已取消
 }
