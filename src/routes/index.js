@@ -43,7 +43,7 @@ router.post('/auth/password/reset', authController.resetPassword);
 // ==============================
 // 🏰 3. Guild: 公會會員中心 (需 Token)
 // ==============================
-// --- 基本資料 (Profile) ---
+// --- 基本資料 ---
 router.get('/guild/profile', verifyToken, authController.getProfile);
 router.put('/guild/profile', verifyToken, authController.updateProfile);
 
@@ -55,7 +55,10 @@ router.delete('/guild/addresses/:id', verifyToken, addressController.deleteAddre
 // --- 帳號與交易 ---
 router.put('/guild/password', verifyToken, guildController.changePassword);
 router.delete('/guild/account', verifyToken, guildController.deleteAccount);
-router.get('/guild/orders', verifyToken, guildController.getOrders);
+
+router.get('/guild/orders', verifyToken, guildController.getOrders);       // 訂單列表
+router.get('/guild/orders/:id', verifyToken, guildController.getOrderById); // ✨ [新增] 訂單詳情 (Snapshot View)
+
 router.get('/guild/inventory', verifyToken, guildController.getInventory);
 
 // --- 遊戲化 (錢包、成就、任務日誌) ---
@@ -63,15 +66,15 @@ router.get('/guild/wallet', verifyToken, guildController.getWallet);
 router.get('/guild/achievements', verifyToken, guildController.getAchievements);
 router.get('/guild/quests', verifyToken, questController.getMyQuests);
 
-// --- 收藏管理 (Bookmarks) ---
+// --- 收藏管理 ---
 router.get('/guild/bookmarks', verifyToken, guildController.getBookmarks);
 router.post('/guild/bookmarks', verifyToken, guildController.addBookmark);
 router.delete('/guild/bookmarks/:id', verifyToken, guildController.removeBookmark);
 
-// ✨ [新增] 願望清單 (Wishlist)
-router.get('/guild/wishlist', verifyToken, guildController.getWishlist);       // 查看清單
-router.post('/guild/wishlist', verifyToken, guildController.addToWishlist);    // 加入清單 (Body: productId)
-router.delete('/guild/wishlist/:id', verifyToken, guildController.removeFromWishlist); // 移除清單 (URL: productId)
+// --- 願望清單 ---
+router.get('/guild/wishlist', verifyToken, guildController.getWishlist);
+router.post('/guild/wishlist', verifyToken, guildController.addToWishlist);
+router.delete('/guild/wishlist/:id', verifyToken, guildController.removeFromWishlist);
 
 
 // ==============================
