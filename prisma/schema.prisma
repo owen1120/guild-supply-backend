@@ -47,8 +47,7 @@ model Product {
   // --- 關聯 ---
   orderItems  OrderItem[]
   cartItems   CartItem[]
-  articles    Article[]
-  wishlistedBy WishlistItem[] // 被哪些人加入願望清單
+  wishlistedBy WishlistItem[]
 }
 
 // ==============================
@@ -112,9 +111,9 @@ model Address {
   phone     String
   city      String
   district  String
-  detail    String // 街道與樓層
+  detail    String
   
-  isDefault Boolean @default(false) // 是否為預設地址
+  isDefault Boolean @default(false)
 
   createdAt DateTime @default(now())
 }
@@ -196,7 +195,7 @@ model WishlistItem {
   
   addedAt   DateTime @default(now())
   
-  @@unique([userId, productId]) // 防止重複加入
+  @@unique([userId, productId])
 }
 
 // ==============================
@@ -231,7 +230,7 @@ model Achievement {
   title       String
   description String
   icon        String
-  condition   Json?    // 達成條件 (新增)
+  condition   Json?
   
   users       UserAchievement[]
 }
@@ -245,7 +244,7 @@ model UserAchievement {
   
   unlockedAt    DateTime    @default(now())
 
-  @@unique([userId, achievementId]) // 確保不重複領取
+  @@unique([userId, achievementId])
 }
 
 model Quest {
@@ -304,22 +303,29 @@ enum QuestStatus {
 model Article {
   id          String   @id @default(uuid())
   slug        String   @unique
+  isPublished Boolean  @default(true)
+  
   title       String
-  summary     String?
-  content     String
-  category    String
-  tags        String[]
+  category    String   @default("GENERAL")
   
-  thumbnail   String?
-  
+  subtitle    String?
+  coverImage  String?
+  authorInfo  Json?
+
+  rpgMetadata Json?    
+
+  contentBody Json?    
+
+  linkedProducts Json? 
+
+  location    Json?    
+
   views       Int      @default(0)
   likes       Int      @default(0)
   
-  isPublished Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  products    Product[]
   bookmarks   UserBookmark[]
 }
 
