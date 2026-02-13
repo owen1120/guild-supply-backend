@@ -250,15 +250,30 @@ model UserAchievement {
 
 model Quest {
   id           String      @id @default(uuid())
-  title        String 
-  description  String 
-  target       Int
-  rewardPoints Int         @default(0)
-     
+
+  type         QuestType   @default(MAIN)
+  isActive     Boolean     @default(true)
+  repeatable   Boolean     @default(false)
+  
+  displayInfo  Json        
+
+  objectives   Json        
+
+  rewards      Json        
+
+  constraints  Json?       
+
+  startDate    DateTime?
+  endDate      DateTime?
   createdAt    DateTime    @default(now())
-  expiresAt    DateTime?
 
   userQuests   UserQuest[]
+}
+
+enum QuestType {
+  MAIN
+  DAILY
+  EVENT
 }
 
 model UserQuest {
