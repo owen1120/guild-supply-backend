@@ -70,134 +70,79 @@ const previewOrder = async (req, res) => {
 const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { 
-        items,
-        shipping_info,
-        payment_info,
-        discount_code   
-    } = req.body;
+    const { items } = req.body; 
 
-    if (!items || items.length === 0) return res.status(400).json({ success: false, message: '無法建立空訂單' });
+    if (!items || items.length === 0) {
+      return res.status(400).json({ success: false, message: '購物車是空的' });
+    }
 
     const result = await prisma.$transaction(async (tx) => {
       
-      // 1. 撈取商品最新資料 (鎖定價格與快照)
-      const productIds = items.map(i => i.productId);
+      const productIds = items.map(i => i.product_id || i.productId);
+      
       const products = await tx.product.findMany({
         where: { id: { in: productIds } }
       });
 
-      // 2. 準備 Order Item Data & 計算總額
-      let subtotal = 0;
-      let totalLootWeight = 0;
-      let totalRarityScore = 0;
-      
-      const rarityMap = { 'N': 1, 'R': 10, 'SR': 50, 'SSR': 100, 'UR': 500 };
+      let totalPrice = 0;
+      const orderItemsData = [];
 
-      const orderItemsData = items.map(item => {
-        const product = products.find(p => p.id === item.productId);
-        if (!product) throw new Error(`商品 ${item.productId} 已下架或不存在`);
-        if (product.stock < item.quantity) throw new Error(`商品 ${product.title} 庫存不足`);
+      for (const item of items) {
+        const targetId = item.product_id || item.productId;
+        const product = products.find(p => p.id === targetId);
 
-        const lineTotal = product.price * item.quantity;
-        subtotal += lineTotal;
+        if (!product) {
+          throw new Error(`找不到商品 ID: ${targetId}`);
+        }
+        if (product.stock < item.quantity) {
+          throw new Error(`商品 ${product.title} 庫存不足 (剩餘: ${product.stock})`);
+        }
 
-        const rpg = product.rpgDetails || {};
-        const rarity = rpg.rarity || 'N';
-        const weight = 100; 
-        
-        totalLootWeight += weight * item.quantity;
-        totalRarityScore += (rarityMap[rarity] || 1) * item.quantity;
+        const unitPrice = product.price; 
+        const lineTotal = unitPrice * item.quantity;
+        totalPrice += lineTotal;
 
-        return {
+        orderItemsData.push({
           productId: product.id,
           quantity: item.quantity,
-          price: product.price, 
+          price: unitPrice, 
           
           productSnapshot: {
-             sku: product.sku,
-             name: product.title,
-             selected_options: item.selectedOptions || [],
-             media: product.images ? { thumbnail_url: product.images[0]?.url } : {},
-             rpg_snapshot: {
-                 rarity: rarity,
-                 tags: rpg.tags || []
-             }
+            title: product.title,
+            rpg_tuning: product.rpgDetails || {} 
           }
-        };
-      });
-      
-      for (const item of items) {
-          await tx.product.update({
-              where: { id: item.productId },
-              data: { stock: { decrement: item.quantity } }
-          });
+        });
+
+        await tx.product.update({
+          where: { id: product.id },
+          data: { stock: { decrement: item.quantity } }
+        });
       }
 
-      // 3. 計算最終金額 (Pricing Summary)
-      const shippingFee = subtotal > 3000 ? 0 : 100;
-      let discountAmount = 0;
-      if (discount_code === 'GUILD_MEMBER_V') discountAmount = 500;
-      
-      const tax = Math.round((subtotal - discountAmount) * 0.05);
-      const grandTotal = Math.max(0, subtotal + shippingFee - discountAmount + tax);
-
-      // 4. 建立訂單 (Create Order)
       const newOrder = await tx.order.create({
         data: {
-          userId: userId,
-          status: 'PAID', 
-          total: grandTotal,
-          
-          statusHistory: {
-              current: "PROCESSING",
-              rpg_display: "LOOT_PREPARING",
-              history: [
-                  { status: "CREATED", timestamp: new Date(), note: "Contract signed." },
-                  { status: "PAID", timestamp: new Date(), note: "Gold coins received." }
-              ]
-          },
-
-          pricingSummary: {
-              currency: "TWD",
-              subtotal,
-              shipping_fee: shippingFee,
-              discount: { code: discount_code, amount: discountAmount },
-              tax,
-              grand_total: grandTotal
-          },
-
-          shippingInfo: shipping_info || {}, 
-
-          paymentInfo: {
-              ...payment_info,
-              status: "PAID"
-          },
-
-          rpgAnalytics: {
-              total_loot_weight: totalLootWeight,
-              total_rarity_score: totalRarityScore,
-              adventure_ready_status: totalRarityScore > 100 ? "HIGH" : "NORMAL"
-          },
-
+          userId,
+          total: totalPrice,
+          status: 'PENDING',
           items: {
-              create: orderItemsData
+            create: orderItemsData 
           }
         },
-        include: {
-            items: true 
-        }
+        include: { items: true } 
       });
-
-      // 5. 清空購物車 (Clear Cart)
-      await tx.cart.delete({ where: { userId } }).catch(() => {}); 
 
       return newOrder;
     });
 
-    res.status(201).json({ success: true, message: '訂單契約已成立', data: result });
+    res.status(201).json({ 
+      success: true, 
+      message: '訂單建立成功', 
+      orderId: result.id,
+      data: result 
+    });
 
   } catch (error) {
+    console.error('🔥 下單失敗:', error);
     res.status(500).json({ success: false, message: '下單失敗: ' + error.message });
   }
 };

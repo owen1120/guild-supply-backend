@@ -4,7 +4,7 @@ const prisma = require('../utils/prisma');
 const getCategories = async (req, res) => {
   try {
     const categories = await prisma.product.findMany({
-      where: { is_published: true },
+      where: { isPublished: true }, 
       distinct: ['category'],
       select: { category: true }
     });
@@ -13,7 +13,8 @@ const getCategories = async (req, res) => {
     
     res.status(200).json({ success: true, data: categoryList });
   } catch (error) {
-    res.status(500).json({ success: false, message: '無法讀取分類' });
+    console.error('🔥 [getCategories] Error:', error); 
+    res.status(500).json({ success: false, message: '無法讀取分類', error: error.message });
   }
 };
 
@@ -21,13 +22,14 @@ const getCategories = async (req, res) => {
 const getFeaturedProducts = async (req, res) => {
   try {
     const products = await prisma.product.findMany({
-      where: { is_published: true },
+      where: { isPublished: true }, 
       take: 4, 
       orderBy: { createdAt: 'desc' } 
     });
     res.status(200).json({ success: true, data: products });
   } catch (error) {
-    res.status(500).json({ success: false, message: '無法讀取精選商品' });
+    console.error('🔥 [getFeaturedProducts] Error:', error);
+    res.status(500).json({ success: false, message: '無法讀取精選商品', error: error.message });
   }
 };
 
@@ -48,9 +50,10 @@ const getProducts = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     // 建立搜尋條件
-    const where = { is_published: true };
+    const where = { isPublished: true }; 
 
     if (keyword) {
+      // 搜尋標題 (Title)
       where.title = { contains: keyword, mode: 'insensitive' };
     }
     if (category) {
@@ -90,7 +93,8 @@ const getProducts = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: '搜尋失敗' });
+    console.error('🔥 [getProducts] Error:', error); 
+    res.status(500).json({ success: false, message: '搜尋失敗', error: error.message });
   }
 };
 
@@ -108,7 +112,8 @@ const getProductById = async (req, res) => {
 
     res.status(200).json({ success: true, data: product });
   } catch (error) {
-    res.status(500).json({ success: false, message: '讀取詳情失敗' });
+    console.error('🔥 [getProductById] Error:', error);
+    res.status(500).json({ success: false, message: '讀取詳情失敗', error: error.message });
   }
 };
 

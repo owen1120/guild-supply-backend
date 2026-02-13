@@ -3,6 +3,9 @@ const cors = require('cors');
 const listEndpoints = require('express-list-endpoints');
 require('dotenv').config();
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger_output.json'); 
+
 const router = require('./routes/index'); 
 
 const app = express();
@@ -18,6 +21,8 @@ app.get('/', (req, res) => {
     <p>測試連結：<a href="/guild-supply/products">/guild-supply/products</a></p>
   `);
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use('/guild-supply', router);
 

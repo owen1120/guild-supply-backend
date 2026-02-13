@@ -180,35 +180,135 @@ const getAchievements = async (req, res) => {
 // ==============================
 const getBookmarks = async (req, res) => {
   try {
+    const userId = req.user.id;
+    console.log(`🔍 [Bookmarks] 正在搜尋冒險者 ID: ${userId} 的收藏卷軸...`);
+
     const bookmarks = await prisma.userBookmark.findMany({
-      where: { userId: req.user.id },
-      include: { article: { select: { id: true, title: true, summary: true, thumbnail: true, slug: true } } },
-      orderBy: { createdAt: 'desc' }
+      where: { 
+        userId: userId 
+      },
+      include: {
+        article: true 
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
-    const data = bookmarks.map(b => ({ ...b.article, bookmarkedAt: b.createdAt }));
-    res.status(200).json({ success: true, data });
+
+    console.log(`✅ [Bookmarks] 找到 ${bookmarks.length} 筆收藏`);
+
+    res.status(200).json({ 
+        success: true, 
+        data: bookmarks 
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: '無法讀取收藏卷軸' });
+    console.error('🔥 [getBookmarks] 錯誤:', error);
+
+    res.status(500).json({ 
+        success: false, 
+        message: '無法讀取收藏卷軸', 
+        error_detail: error.message 
+    });
   }
 };
 
 const addBookmark = async (req, res) => {
   try {
-    const { articleId } = req.body;
-    await prisma.userBookmark.create({ data: { userId: req.user.id, articleId } });
-    res.status(200).json({ success: true, message: '收藏成功' });
+    const userId = req.user.id;
+    const { articleId } = req.body; 
+
+    if (!articleId) {
+      return res.status(400).json({ success: false, message: '請提供文章 ID' });
+    }
+
+    const article = await prisma.article.findUnique({
+      where: { id: articleId }
+    });
+
+    if (!article) {
+      return res.status(404).json({ success: false, message: '找不到該文章卷軸' });
+    }
+    
+    const existingBookmark = await prisma.userBookmark.findUnique({
+      where: {
+        userId_articleId: { 
+          userId: userId,
+          articleId: articleId
+        }
+      }
+    });
+
+    if (existingBookmark) {
+      return res.status(400).json({ success: false, message: '您已經收藏過這篇文章了' });
+    }
+
+    const newBookmark = await prisma.userBookmark.create({
+      data: {
+        userId: userId,
+        articleId: articleId
+      },
+      include: {
+        article: true 
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: '成功加入收藏',
+      data: newBookmark
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: '收藏失敗 (可能已重複)' });
+    console.error('🔥 [addBookmark] 錯誤:', error);
+    res.status(500).json({ 
+        success: false, 
+        message: '加入收藏失敗', 
+        error_detail: error.message 
+    });
   }
 };
 
 const removeBookmark = async (req, res) => {
   try {
-    const { id } = req.params;
-    await prisma.userBookmark.delete({ where: { userId_articleId: { userId: req.user.id, articleId: id } } });
-    res.status(200).json({ success: true, message: '已移除收藏' });
+    const userId = req.user.id;
+    const { id: articleId } = req.params; 
+
+    if (!articleId) {
+      return res.status(400).json({ success: false, message: '請提供文章 ID' });
+    }
+
+    const bookmark = await prisma.userBookmark.findUnique({
+      where: {
+        userId_articleId: {
+          userId: userId,
+          articleId: articleId
+        }
+      }
+    });
+
+    if (!bookmark) {
+      return res.status(404).json({ success: false, message: '收藏紀錄不存在，無法移除' });
+    }
+
+    await prisma.userBookmark.delete({
+      where: {
+        id: bookmark.id 
+      }
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      message: '已從收藏清單中移除' 
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: '移除失敗' });
+    console.error('🔥 [removeBookmark] 錯誤:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '移除收藏失敗', 
+      error_detail: error.message 
+    });
   }
 };
 
