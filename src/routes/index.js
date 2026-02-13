@@ -12,12 +12,12 @@ const cartController = require('../controllers/cart.controller');
 const orderController = require('../controllers/order.controller');
 const libraryController = require('../controllers/library.controller');
 
+// --- 引入後台專用控制器 ---
 const adminOrderController = require('../controllers/adminOrder.controller');
 const adminLibraryController = require('../controllers/adminLibrary.controller');
 const adminQuestController = require('../controllers/adminQuest.controller');
 
 // --- 2. 引入 Middleware ---
-// ⚠️ 注意：這裡改成解構賦值，因為我們現在匯出了兩個函式
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
 // ==============================
@@ -43,7 +43,7 @@ router.post('/auth/password/reset', authController.resetPassword);
 // ==============================
 // 🏰 3. Guild: 公會會員中心 (需 Token)
 // ==============================
-// --- 基本資料 ---
+// --- 基本資料 (Profile) ---
 router.get('/guild/profile', verifyToken, authController.getProfile);
 router.put('/guild/profile', verifyToken, authController.updateProfile);
 
@@ -63,10 +63,15 @@ router.get('/guild/wallet', verifyToken, guildController.getWallet);
 router.get('/guild/achievements', verifyToken, guildController.getAchievements);
 router.get('/guild/quests', verifyToken, questController.getMyQuests);
 
-// --- 收藏管理 ---
+// --- 收藏管理 (Bookmarks) ---
 router.get('/guild/bookmarks', verifyToken, guildController.getBookmarks);
 router.post('/guild/bookmarks', verifyToken, guildController.addBookmark);
 router.delete('/guild/bookmarks/:id', verifyToken, guildController.removeBookmark);
+
+// ✨ [新增] 願望清單 (Wishlist)
+router.get('/guild/wishlist', verifyToken, guildController.getWishlist);       // 查看清單
+router.post('/guild/wishlist', verifyToken, guildController.addToWishlist);    // 加入清單 (Body: productId)
+router.delete('/guild/wishlist/:id', verifyToken, guildController.removeFromWishlist); // 移除清單 (URL: productId)
 
 
 // ==============================
@@ -81,14 +86,12 @@ router.post('/quests/:id/progress', verifyToken, questController.debugProgress);
 // ==============================
 // 🚚 5. Logistics: 購物車與結帳 (需 Token)
 // ==============================
-// --- 購物車 ---
 router.get('/cart', verifyToken, cartController.getCart);
 router.post('/cart', verifyToken, cartController.addToCart);
 router.patch('/cart/:itemId', verifyToken, cartController.updateCartItem);
 router.delete('/cart/:itemId', verifyToken, cartController.removeCartItem);
 router.delete('/cart', verifyToken, cartController.clearCart);
 
-// --- 結帳 ---
 router.post('/orders/preview', verifyToken, orderController.previewOrder);
 router.post('/orders', verifyToken, orderController.createOrder);
 
@@ -105,23 +108,22 @@ router.post('/library/scrolls/:id/like', libraryController.likeScroll);
 // ==============================
 // 🛡️ 7. Admin: 公會長辦公室 (需 Token + Admin權限)
 // ==============================
-
-// --- 商品管理 (Armory) ---
+// --- 商品 ---
 router.get('/admin/products', verifyToken, verifyAdmin, adminProductController.getAdminProducts);
 router.post('/admin/products', verifyToken, verifyAdmin, adminProductController.createProduct);
 router.put('/admin/products/:id', verifyToken, verifyAdmin, adminProductController.updateProduct);
 router.delete('/admin/products/:id', verifyToken, verifyAdmin, adminProductController.deleteProduct);
 
-// --- 訂單管理 (Logistics) ---
+// --- 訂單 ---
 router.get('/admin/orders', verifyToken, verifyAdmin, adminOrderController.getAdminOrders);
 router.patch('/admin/orders/:id/status', verifyToken, verifyAdmin, adminOrderController.updateOrderStatus);
 
-// --- 文章管理 (Library) ---
+// --- 文章 ---
 router.post('/admin/articles', verifyToken, verifyAdmin, adminLibraryController.createArticle);
 router.put('/admin/articles/:id', verifyToken, verifyAdmin, adminLibraryController.updateArticle);
 router.delete('/admin/articles/:id', verifyToken, verifyAdmin, adminLibraryController.deleteArticle);
 
-// --- 任務管理 (Quest) ---
+// --- 任務 ---
 router.post('/admin/quests', verifyToken, verifyAdmin, adminQuestController.createQuest);
 router.put('/admin/quests/:id', verifyToken, verifyAdmin, adminQuestController.updateQuest);
 router.delete('/admin/quests/:id', verifyToken, verifyAdmin, adminQuestController.deleteQuest);
