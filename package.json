@@ -5,8 +5,9 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node prisma/seed.js",
-    "swagger": "node src/swagger.js"
+    "build": "npx prisma generate",
+    "swagger": "node src/swagger.js",
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.0.0",

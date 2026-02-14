@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // --- 1. 引入所有控制器 (Controllers) ---
+const adminDashboardController = require('../controllers/adminDashboard.controller');
 const clientController = require('../controllers/clientProduct.controller');
 const authController = require('../controllers/auth.controller'); 
 const adminProductController = require('../controllers/adminProduct.controller');
@@ -19,6 +20,14 @@ const adminQuestController = require('../controllers/adminQuest.controller');
 
 // --- 2. 引入 Middleware ---
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
+
+// 儀表板數據
+router.get('/admin/dashboard/stats', verifyToken, verifyAdmin, (req, res, next) => {
+    // #swagger.tags = ['Admin Dashboard (後台管理)']
+    // #swagger.summary = '[後台] 取得戰情室統計數據'
+    // #swagger.security = [{ "bearerAuth": [] }]
+    next();
+}, adminDashboardController.getDashboardStats);
 
 // ==============================
 // 🛒 1. Armory: 客戶端產品 (Public)
