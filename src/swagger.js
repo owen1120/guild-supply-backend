@@ -6,8 +6,8 @@ const doc = {
     description: '公會補給站後端 API 文件',
     version: '1.0.0',
   },
-  host: 'localhost:3000', 
-  schemes: ['http'],
+  host: process.env.RENDER_EXTERNAL_HOSTNAME || 'localhost:3000', 
+  schemes: process.env.NODE_ENV === 'production' ? ['https'] : ['http'],
   securityDefinitions: {
     bearerAuth: {
       type: 'apiKey',
