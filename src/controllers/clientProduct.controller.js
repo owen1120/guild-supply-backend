@@ -43,58 +43,105 @@ const getProducts = async (req, res) => {
       category, 
       minPrice, 
       maxPrice, 
-      sort 
+      sort,
+      rarity, 
+      minDef, maxDef, 
+      minAgi, maxAgi, 
+      minRes, maxRes 
     } = req.query;
 
-    // 計算分頁
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
 
-    // 建立搜尋條件
-    const where = { isPublished: true }; 
+    const where = {
+      isPublished: true, 
+    };
 
     if (keyword) {
-      // 搜尋標題 (Title)
-      where.title = { contains: keyword, mode: 'insensitive' };
+      where.OR = [
+        { title: { contains: keyword, mode: 'insensitive' } },
+        { description: { contains: keyword, mode: 'insensitive' } }
+      ];
     }
-    if (category) {
+
+    if (category && category !== 'All') {
       where.category = category;
     }
+
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) where.price.gte = parseInt(minPrice);
       if (maxPrice) where.price.lte = parseInt(maxPrice);
     }
 
-    // 建立排序
-    let orderBy = { createdAt: 'desc' };
-    if (sort === 'price_asc') orderBy = { price: 'asc' };
-    if (sort === 'price_desc') orderBy = { price: 'desc' };
+    if (rarity) {
+      const rarityList = rarity.split(','); 
+      where.rarity = { in: rarityList };
+    }
 
-    // 執行查詢 (同時查資料 + 總數)
-    const [products, total] = await prisma.$transaction([
+    if (minDef || maxDef) {
+      where.def = {};
+      if (minDef) where.def.gte = parseInt(minDef);
+      if (maxDef) where.def.lte = parseInt(maxDef);
+    }
+    if (minAgi || maxAgi) {
+      where.agi = {};
+      if (minAgi) where.agi.gte = parseInt(minAgi);
+      if (maxAgi) where.agi.lte = parseInt(maxAgi);
+    }
+    if (minRes || maxRes) {
+      where.res = {};
+      if (minRes) where.res.gte = parseInt(minRes);
+      if (maxRes) where.res.lte = parseInt(maxRes);
+    }
+
+    let orderBy = { createdAt: 'desc' }; 
+
+    switch (sort) {
+      case 'price_asc':
+        orderBy = { price: 'asc' };
+        break;
+      case 'price_desc':
+        orderBy = { price: 'desc' };
+        break;
+      case 'name_asc': 
+        orderBy = { title: 'asc' };
+        break;
+      case 'name_desc': 
+        orderBy = { title: 'desc' };
+        break;
+      case 'oldest':
+        orderBy = { createdAt: 'asc' };
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+    }
+
+    const [total, products] = await Promise.all([
+      prisma.product.count({ where }),
       prisma.product.findMany({
         where,
-        skip,
-        take: parseInt(limit),
-        orderBy
-      }),
-      prisma.product.count({ where })
+        take: limitNum,
+        skip: skip,
+        orderBy,
+      })
     ]);
 
     res.status(200).json({
       success: true,
-      data: products,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / parseInt(limit))
-      }
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      },
+      data: products
     });
 
   } catch (error) {
-    console.error('🔥 [getProducts] Error:', error); 
-    res.status(500).json({ success: false, message: '搜尋失敗', error: error.message });
+    console.error('🔥 取得商品列表失敗:', error);
+    res.status(500).json({ success: false, message: '伺服器錯誤' });
   }
 };
 

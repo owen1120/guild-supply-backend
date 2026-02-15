@@ -32,7 +32,13 @@ model Product {
   sections    Json?    
 
   images      Json?    
-  videos      Json?    
+  videos      Json?
+
+  rarity      String   @default("N")
+  
+  def         Int      @default(0)
+  agi         Int      @default(0)
+  res         Int      @default(0)
   
   rpgDetails  Json?    
   
