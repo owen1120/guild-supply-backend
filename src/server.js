@@ -10,6 +10,12 @@ const router = require('./routes/index');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'http://localhost:3000', 
+  'https://guild-supply-backend.onrender.com' 
+];
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
@@ -27,7 +33,6 @@ app.use(cors({
 
 app.use(express.json()); 
 
-
 app.get('/', (req, res) => {
   res.send(`
     <h1>公會補給站伺服器運作中</h1>
@@ -41,7 +46,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/guild-supply', router);
 
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000 || 5173;
+  const PORT = process.env.PORT || 3000;
   
   app.listen(PORT, () => {
     console.log(`\n本地伺服器已啟動: http://localhost:${PORT}`);
