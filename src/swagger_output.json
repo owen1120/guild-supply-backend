@@ -29,7 +29,7 @@
         }
       }
     },
-    "/guild-supply/admin/dashboard/stats": {
+    "/guild-supply/api/admin/dashboard/stats": {
       "get": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -67,7 +67,7 @@
         ]
       }
     },
-    "/guild-supply/products/categories": {
+    "/guild-supply/api/products/categories": {
       "get": {
         "tags": [
           "Products (商品)"
@@ -84,7 +84,7 @@
         }
       }
     },
-    "/guild-supply/products/featured": {
+    "/guild-supply/api/products/featured": {
       "get": {
         "tags": [
           "Products (商品)"
@@ -101,7 +101,7 @@
         }
       }
     },
-    "/guild-supply/products": {
+    "/guild-supply/api/products": {
       "get": {
         "tags": [
           "Products (商品)"
@@ -126,6 +126,41 @@
           },
           {
             "name": "sort",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "rarity",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "minDef",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "maxDef",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "minAgi",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "maxAgi",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "minRes",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "maxRes",
             "in": "query",
             "type": "string"
           },
@@ -158,7 +193,7 @@
         }
       }
     },
-    "/guild-supply/products/{id}": {
+    "/guild-supply/api/products/{id}": {
       "get": {
         "tags": [
           "Products (商品)"
@@ -186,7 +221,7 @@
         }
       }
     },
-    "/guild-supply/auth/signup": {
+    "/guild-supply/api/auth/signup": {
       "post": {
         "tags": [
           "Authentication (認證)"
@@ -235,7 +270,7 @@
         }
       }
     },
-    "/guild-supply/auth/login": {
+    "/guild-supply/api/auth/login": {
       "post": {
         "tags": [
           "Authentication (認證)"
@@ -279,7 +314,7 @@
         }
       }
     },
-    "/guild-supply/auth/logout": {
+    "/guild-supply/api/auth/logout": {
       "post": {
         "tags": [
           "Authentication (認證)"
@@ -293,7 +328,7 @@
         }
       }
     },
-    "/guild-supply/auth/refresh": {
+    "/guild-supply/api/auth/refresh": {
       "post": {
         "tags": [
           "Authentication (認證)"
@@ -307,7 +342,7 @@
         }
       }
     },
-    "/guild-supply/auth/password/forgot": {
+    "/guild-supply/api/auth/password/forgot": {
       "post": {
         "tags": [
           "Authentication (認證)"
@@ -321,7 +356,7 @@
         }
       }
     },
-    "/guild-supply/auth/password/reset": {
+    "/guild-supply/api/auth/password/reset": {
       "post": {
         "tags": [
           "Authentication (認證)"
@@ -335,7 +370,7 @@
         }
       }
     },
-    "/guild-supply/guild/profile": {
+    "/guild-supply/api/guild/profile": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -433,7 +468,7 @@
         ]
       }
     },
-    "/guild-supply/guild/addresses": {
+    "/guild-supply/api/guild/addresses": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -525,7 +560,7 @@
         ]
       }
     },
-    "/guild-supply/guild/addresses/{id}": {
+    "/guild-supply/api/guild/addresses/{id}": {
       "delete": {
         "tags": [
           "Guild (公會中心)"
@@ -569,7 +604,7 @@
         ]
       }
     },
-    "/guild-supply/guild/password": {
+    "/guild-supply/api/guild/password": {
       "put": {
         "tags": [
           "Guild (公會中心)"
@@ -619,7 +654,7 @@
         ]
       }
     },
-    "/guild-supply/guild/account": {
+    "/guild-supply/api/guild/account": {
       "delete": {
         "tags": [
           "Guild (公會中心)"
@@ -654,7 +689,7 @@
         ]
       }
     },
-    "/guild-supply/guild/orders": {
+    "/guild-supply/api/guild/orders": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -689,7 +724,7 @@
         ]
       }
     },
-    "/guild-supply/guild/orders/{id}": {
+    "/guild-supply/api/guild/orders/{id}": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -733,7 +768,7 @@
         ]
       }
     },
-    "/guild-supply/guild/inventory": {
+    "/guild-supply/api/guild/inventory": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -768,7 +803,7 @@
         ]
       }
     },
-    "/guild-supply/guild/wallet": {
+    "/guild-supply/api/guild/wallet": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -803,7 +838,7 @@
         ]
       }
     },
-    "/guild-supply/guild/achievements": {
+    "/guild-supply/api/guild/achievements": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -838,7 +873,7 @@
         ]
       }
     },
-    "/guild-supply/guild/quests": {
+    "/guild-supply/api/guild/quests": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -873,7 +908,7 @@
         ]
       }
     },
-    "/guild-supply/guild/bookmarks": {
+    "/guild-supply/api/guild/bookmarks": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -956,7 +991,7 @@
         ]
       }
     },
-    "/guild-supply/guild/bookmarks/{id}": {
+    "/guild-supply/api/guild/bookmarks/{id}": {
       "delete": {
         "tags": [
           "Guild (公會中心)"
@@ -1000,7 +1035,7 @@
         ]
       }
     },
-    "/guild-supply/guild/wishlist": {
+    "/guild-supply/api/guild/wishlist": {
       "get": {
         "tags": [
           "Guild (公會中心)"
@@ -1080,7 +1115,7 @@
         ]
       }
     },
-    "/guild-supply/guild/wishlist/{id}": {
+    "/guild-supply/api/guild/wishlist/{id}": {
       "delete": {
         "tags": [
           "Guild (公會中心)"
@@ -1121,7 +1156,7 @@
         ]
       }
     },
-    "/guild-supply/quests": {
+    "/guild-supply/api/quests": {
       "get": {
         "tags": [
           "Quests (任務)"
@@ -1156,7 +1191,7 @@
         ]
       }
     },
-    "/guild-supply/quests/{id}/accept": {
+    "/guild-supply/api/quests/{id}/accept": {
       "post": {
         "tags": [
           "Quests (任務)"
@@ -1200,7 +1235,7 @@
         ]
       }
     },
-    "/guild-supply/quests/{id}/claim": {
+    "/guild-supply/api/quests/{id}/claim": {
       "post": {
         "tags": [
           "Quests (任務)"
@@ -1241,7 +1276,7 @@
         ]
       }
     },
-    "/guild-supply/quests/{id}/progress": {
+    "/guild-supply/api/quests/{id}/progress": {
       "post": {
         "tags": [
           "Quests (任務)"
@@ -1300,7 +1335,7 @@
         ]
       }
     },
-    "/guild-supply/cart": {
+    "/guild-supply/api/cart": {
       "get": {
         "tags": [
           "Cart & Order (購物車與下單)"
@@ -1425,7 +1460,7 @@
         ]
       }
     },
-    "/guild-supply/cart/{itemId}": {
+    "/guild-supply/api/cart/{itemId}": {
       "patch": {
         "tags": [
           "Cart & Order (購物車與下單)"
@@ -1517,7 +1552,7 @@
         ]
       }
     },
-    "/guild-supply/orders/preview": {
+    "/guild-supply/api/orders/preview": {
       "post": {
         "tags": [
           "Cart & Order (購物車與下單)"
@@ -1567,7 +1602,7 @@
         ]
       }
     },
-    "/guild-supply/orders": {
+    "/guild-supply/api/orders": {
       "post": {
         "tags": [
           "Cart & Order (購物車與下單)"
@@ -1631,7 +1666,7 @@
         ]
       }
     },
-    "/guild-supply/library/categories": {
+    "/guild-supply/api/library/categories": {
       "get": {
         "tags": [
           "Library (圖書館)"
@@ -1648,7 +1683,7 @@
         }
       }
     },
-    "/guild-supply/library/scrolls": {
+    "/guild-supply/api/library/scrolls": {
       "get": {
         "tags": [
           "Library (圖書館)"
@@ -1677,7 +1712,7 @@
         }
       }
     },
-    "/guild-supply/library/scrolls/{id}": {
+    "/guild-supply/api/library/scrolls/{id}": {
       "get": {
         "tags": [
           "Library (圖書館)"
@@ -1705,7 +1740,7 @@
         }
       }
     },
-    "/guild-supply/library/scrolls/{id}/like": {
+    "/guild-supply/api/library/scrolls/{id}/like": {
       "post": {
         "tags": [
           "Library (圖書館)"
@@ -1733,7 +1768,7 @@
         }
       }
     },
-    "/guild-supply/admin/products": {
+    "/guild-supply/api/admin/products": {
       "get": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -1843,7 +1878,7 @@
         ]
       }
     },
-    "/guild-supply/admin/products/{id}": {
+    "/guild-supply/api/admin/products/{id}": {
       "put": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -1968,7 +2003,7 @@
         ]
       }
     },
-    "/guild-supply/admin/orders": {
+    "/guild-supply/api/admin/orders": {
       "get": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -2021,7 +2056,7 @@
         ]
       }
     },
-    "/guild-supply/admin/orders/{id}/status": {
+    "/guild-supply/api/admin/orders/{id}/status": {
       "patch": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -2080,7 +2115,7 @@
         ]
       }
     },
-    "/guild-supply/admin/articles": {
+    "/guild-supply/api/admin/articles": {
       "post": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -2148,7 +2183,7 @@
         ]
       }
     },
-    "/guild-supply/admin/articles/{id}": {
+    "/guild-supply/api/admin/articles/{id}": {
       "put": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -2267,7 +2302,7 @@
         ]
       }
     },
-    "/guild-supply/admin/quests": {
+    "/guild-supply/api/admin/quests": {
       "post": {
         "tags": [
           "Admin Dashboard (後台管理)"
@@ -2338,7 +2373,7 @@
         ]
       }
     },
-    "/guild-supply/admin/quests/{id}": {
+    "/guild-supply/api/admin/quests/{id}": {
       "put": {
         "tags": [
           "Admin Dashboard (後台管理)"

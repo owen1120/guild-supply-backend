@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
-app.use('/guild-supply', router);
+app.use('/guild-supply/api', router);
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
