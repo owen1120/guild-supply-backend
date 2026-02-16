@@ -1,0 +1,4 @@
+# .gitattributes
+# 強制所有文字檔案在 Git 倉庫中都使用 LF (Linux 標準)
+# 這能確保您的專案在 Windows 和 Render 上都表現一致
+* text=auto eol=lf
