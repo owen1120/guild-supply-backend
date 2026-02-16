@@ -41,7 +41,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/guild-supply', router);
 
 if (require.main === module) {
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3000 || 5173;
   
   app.listen(PORT, () => {
     console.log(`\n本地伺服器已啟動: http://localhost:${PORT}`);
