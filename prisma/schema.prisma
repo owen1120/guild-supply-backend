@@ -254,30 +254,29 @@ model UserAchievement {
 }
 
 model Quest {
-  id           String      @id @default(uuid())
-
-  type         QuestType   @default(MAIN)
-  isActive     Boolean     @default(true)
-  repeatable   Boolean     @default(false)
+  id          String    @id
+  type        QuestType 
+  isActive    Boolean   @default(true)
+  repeatable  Boolean   @default(false)
   
-  displayInfo  Json        
+  startDate   DateTime
+  endDate     DateTime? 
+  
+  displayInfo Json
+  objectives  Json
+  rewards     Json
+  constraints Json
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  objectives   Json        
-
-  rewards      Json        
-
-  constraints  Json?       
-
-  startDate    DateTime?
-  endDate      DateTime?
-  createdAt    DateTime    @default(now())
-
-  userQuests   UserQuest[]
+  userQuests  UserQuest[]
 }
 
 enum QuestType {
   MAIN
   DAILY
+  WEEKLY
   EVENT
 }
 
@@ -307,32 +306,28 @@ enum QuestStatus {
 // 6. Content (文章與收藏)
 // ==============================
 model Article {
-  id          String   @id @default(uuid())
+  id          String   @id
   slug        String   @unique
-  isPublished Boolean  @default(true)
-  
   title       String
-  category    String   @default("GENERAL")
-  
   subtitle    String?
+  category    String 
+  
   coverImage  String?
-  authorInfo  Json?
-
-  rpgMetadata Json?    
-
-  contentBody Json?    
-
-  linkedProducts Json? 
-
-  location    Json?    
-
+  
   views       Int      @default(0)
   likes       Int      @default(0)
   
+  authorInfo      Json? 
+  contentBody     Json  
+  location        Json? 
+  rpgMetadata     Json? 
+  linkedProducts  Json? 
+  
+  isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  bookmarks   UserBookmark[]
+
+  userBookmarks UserBookmark[]
 }
 
 model UserBookmark {
