@@ -220,6 +220,8 @@ model Coupon {
   rulesMetadata Json?
 
   users       UserCoupon[]
+
+    uid           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid @unique
 }
 
 model UserCoupon {
