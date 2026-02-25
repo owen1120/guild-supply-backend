@@ -64,29 +64,27 @@ model User {
   email                String    @unique
   password             String
   role                 Role      @default(USER)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  
+  firstName            String?
+  lastName             String?
+  dateOfBirth          DateTime?
+
+  points               Int       @default(0)
+  avatar               String?
+  class                String?
+  codename             String?
+  exp                  Int       @default(0)
+  level                Int       @default(1)
+  marketingConsent     Boolean   @default(false)
+  phone                String?
+  preferredActivities  String[]
+  rankTitle            String?
+  
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
-  
-  // --- Wallet ---
-  points               Int       @default(0)
 
-  // --- Identity ---
-  realName             String?   
-  codename             String?   
-  phone                String?
-  avatar               String?   
-  
-  // --- Guild Stats ---
-  class                String    @default("NOVICE")
-  rankTitle            String    @default("Iron Rookie")
-  level                Int       @default(1)
-  exp                  Int       @default(0)
-  
-  // --- Preferences ---
-  marketingConsent     Boolean   @default(false)
-  preferredActivities  String[]
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   // --- 關聯 ---
   addresses            Address[]

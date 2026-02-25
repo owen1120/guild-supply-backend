@@ -123,7 +123,9 @@ const getProfile = async (req, res) => {
         updated_at: user.updatedAt,
 
         identity: {
-            real_name: user.realName,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            date_of_birth: user.dateOfBirth,
             codename: user.codename,
             email: user.email,
             phone: user.phone,
@@ -219,7 +221,7 @@ const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
     const { 
-        realName, codename, phone, avatar, 
+        firstName, lastName, dateOfBirth, codename, phone, avatar, 
         marketingConsent, preferredActivities 
     } = req.body;
 
@@ -235,10 +237,17 @@ const updateProfile = async (req, res) => {
             : [preferredActivities];
     }
 
+    let parsedDateOfBirth = undefined;
+    if (dateOfBirth) {
+        parsedDateOfBirth = new Date(dateOfBirth);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        realName,
+        firstName,
+        lastName,
+        dateOfBirth: parsedDateOfBirth,
         codename,
         phone,
         avatar,
@@ -248,7 +257,8 @@ const updateProfile = async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: '檔案已更新', data: {
-        realName: updatedUser.realName,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
         codename: updatedUser.codename
     }});
 

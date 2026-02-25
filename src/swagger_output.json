@@ -244,15 +244,26 @@
                   "type": "string",
                   "example": "123456"
                 },
+                "firstName": {
+                  "type": "string",
+                  "example": "小明"
+                },
+                "lastName": {
+                  "type": "string",
+                  "example": "王"
+                },
+                "dateOfBirth": {
+                  "type": "string",
+                  "example": "1995-10-25T00:00:00.000Z"
+                },
                 "codename": {
                   "type": "string",
-                  "example": "Hero"
+                  "example": "NightHawk"
                 }
               },
               "required": [
                 "email",
-                "password",
-                "codename"
+                "password"
               ]
             }
           }
@@ -422,26 +433,29 @@
           {
             "name": "body",
             "in": "body",
+            "description": "要更新的資料",
             "schema": {
               "type": "object",
               "properties": {
-                "realName": {
-                  "example": "any"
+                "firstName": {
+                  "type": "string",
+                  "example": "小明"
+                },
+                "lastName": {
+                  "type": "string",
+                  "example": "王"
+                },
+                "dateOfBirth": {
+                  "type": "string",
+                  "example": "1995-10-25T00:00:00.000Z"
                 },
                 "codename": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "NightHawk"
                 },
                 "phone": {
-                  "example": "any"
-                },
-                "avatar": {
-                  "example": "any"
-                },
-                "marketingConsent": {
-                  "example": "any"
-                },
-                "preferredActivities": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "0912345678"
                 }
               }
             }

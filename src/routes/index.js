@@ -69,7 +69,14 @@ router.post('/auth/signup', (req, res, next) => {
     /* #swagger.parameters['body'] = {
         in: 'body',
         description: '註冊資料',
-        schema: { $email: 'user@test.com', $password: '123456', $codename: 'Hero' }
+        schema: { 
+            $email: 'user@test.com', 
+            $password: '123456', 
+            firstName: '小明', 
+            lastName: '王',
+            dateOfBirth: '1995-10-25T00:00:00.000Z',
+            codename: 'NightHawk' 
+        }
     } */
     next();
 }, authController.signup);
@@ -125,6 +132,17 @@ router.put('/guild/profile', verifyToken, (req, res, next) => {
     // #swagger.tags = ['Guild (公會中心)']
     // #swagger.summary = '更新個人檔案'
     // #swagger.security = [{ "bearerAuth": [] }]
+    /* #swagger.parameters['body'] = {
+        in: 'body',
+        description: '要更新的資料',
+        schema: { 
+            firstName: "小明",
+            lastName: "王",
+            dateOfBirth: "1995-10-25T00:00:00.000Z",
+            codename: "NightHawk",
+            phone: "0912345678"
+        }
+    } */
     next();
 }, authController.updateProfile);
 
