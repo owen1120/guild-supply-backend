@@ -150,6 +150,14 @@ router.delete('/guild/addresses/:id', verifyToken, (req, res, next) => {
     next();
 }, addressController.deleteAddress);
 
+router.put('/guild/addresses/:id', verifyToken, (req, res, next) => {
+    // #swagger.tags = ['Guild (公會中心)']
+    // #swagger.summary = '修改地址'
+    // #swagger.description = '傳送點座標重新校準 (修改既有地址)'
+    // #swagger.security = [{ "bearerAuth": [] }]
+    next();
+}, addressController.updateAddress);
+
 // --- 帳號與交易 ---
 router.put('/guild/password', verifyToken, (req, res, next) => {
     // #swagger.tags = ['Guild (公會中心)']

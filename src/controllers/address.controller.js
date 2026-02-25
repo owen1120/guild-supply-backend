@@ -68,4 +68,39 @@ const deleteAddress = async (req, res) => {
   }
 };
 
-module.exports = { getAddresses, addAddress, deleteAddress };
+// 4. Remap Point (修改收件地址)
+const updateAddress = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const { recipient, phone, city, district, detail } = req.body;
+
+    const existingAddress = await prisma.address.findFirst({
+      where: { 
+        id: id,
+        userId: req.user.id 
+      }
+    });
+
+    if (!existingAddress) {
+      return res.status(404).json({ success: false, message: '找不到此傳送點或無權限修改' });
+    }
+
+    const updatedAddress = await prisma.address.update({
+      where: { id: id },
+      data: {
+        recipient: recipient || existingAddress.recipient,
+        phone: phone || existingAddress.phone,
+        city: city || existingAddress.city,
+        district: district !== undefined ? district : existingAddress.district,
+        detail: detail || existingAddress.detail
+      }
+    });
+
+    res.status(200).json({ success: true, message: '傳送點座標已更新', data: updatedAddress });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: '修改失敗: ' + error.message });
+  }
+};
+
+module.exports = { getAddresses, addAddress, deleteAddress, updateAddress };
