@@ -1,154 +1,154 @@
 const prisma = require('../utils/prisma');
 
-// ==============================
-// 1. The Archives (瀏覽所有卷軸)
-// ==============================
+// ==========================================
+// 1. 取得文章分類 (Categories)
+// ==========================================
+const getCategories = async (req, res) => {
+  try {
+    const categories = await prisma.article.findMany({
+      where: { isPublished: true },
+      select: { category: true },
+      distinct: ['category']
+    });
+
+    const categoryList = categories.map(c => c.category);
+    res.status(200).json({ success: true, data: categoryList });
+  } catch (error) {
+    res.status(500).json({ success: false, message: '讀取分類失敗: ' + error.message });
+  }
+};
+
+// ==========================================
+// 2. 取得文章列表 (Scrolls)
+// ==========================================
 const getScrolls = async (req, res) => {
   try {
-    const { category, tag } = req.query;
+    const { category, limit = 10, page = 1 } = req.query;
+    const skip = (Math.max(1, page) - 1) * limit;
 
-    const where = { isPublished: true };
-    if (category) where.category = category;
-    if (tag) where.rpgMetadata = { path: ['tags'], array_contains: tag }; 
+    const whereCondition = { isPublished: true };
+    if (category) {
+      whereCondition.category = category;
+    }
 
-    const articles = await prisma.article.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        subtitle: true,
-        category: true,
-        coverImage: true,
-        rpgMetadata: true, 
-        createdAt: true,
-        likes: true,
-        views: true
+    const [total, articles] = await Promise.all([
+      prisma.article.count({ where: whereCondition }),
+      prisma.article.findMany({
+        where: whereCondition,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          subtitle: true,
+          category: true,
+          coverImage: true,
+          views: true,
+          likes: true,
+          createdAt: true,
+          authorInfo: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: parseInt(limit),
+        skip: parseInt(skip)
+      })
+    ]);
+
+    const formattedData = articles.map(article => ({
+      id: article.id,
+      slug: article.slug,
+      title: article.title,
+      subtitle: article.subtitle,
+      category: article.category,
+      cover_image: article.coverImage,
+      views: article.views,
+      likes: article.likes,
+      created_at: article.createdAt,
+      
+      author_info: article.authorInfo ? {
+        name: article.authorInfo.name,
+        rank_title: article.authorInfo.rank_title,
+        avatar_url: article.authorInfo.avatar_url
+      } : null
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedData,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total_pages: Math.ceil(total / limit)
       }
     });
 
-    const formatted = articles.map(art => ({
-        guide_id: art.id,
-        slug: art.slug,
-        title: art.title,
-        subtitle: art.subtitle,
-        category: art.category,
-        cover_image_url: art.coverImage,
-        rpg_metadata: art.rpgMetadata || {},
-        social: { mana_likes: art.likes, views: art.views },
-        published_at: art.createdAt
-    }));
-
-    res.status(200).json({ success: true, data: formatted });
   } catch (error) {
-    res.status(500).json({ success: false, message: '無法讀取圖書館目錄' });
+    res.status(500).json({ success: false, message: '讀取文章列表失敗: ' + error.message });
   }
 };
 
-// ==============================
-// 2. Read Scroll (閱讀卷軸詳情)
-// ==============================
+// ==========================================
+// 3. 取得單一文章詳細內容 (Scroll Detail)
+// ==========================================
 const getScrollById = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
 
-    let article = await prisma.article.findUnique({ where: { slug: id } });
-    
+    const article = await prisma.article.findFirst({
+      where: {
+        OR: [{ id: id }, { slug: id }],
+        isPublished: true
+      }
+    });
+
     if (!article) {
-        try {
-            article = await prisma.article.findUnique({ where: { id } });
-        } catch (e) {
-        }
-    }
-
-    if (!article || !article.isPublished) {
-        return res.status(404).json({ success: false, message: '找不到該卷軸或已被封存' });
+      return res.status(404).json({ success: false, message: '找不到該卷軸文獻' });
     }
 
     prisma.article.update({
-        where: { id: article.id },
-        data: { views: { increment: 1 } }
-    }).catch(() => {});
+      where: { id: article.id },
+      data: { views: { increment: 1 } }
+    }).catch(err => console.error('更新閱覽數失敗:', err));
 
-    const responseData = {
-        guide_id: article.id,
-        slug: article.slug,
-        is_published: article.isPublished,
-        created_at: article.createdAt,
-        updated_at: article.updatedAt,
-
-        header_info: {
-            title: article.title,
-            subtitle: article.subtitle,
-            category: article.category,
-            cover_image_url: article.coverImage,
-            author: article.authorInfo || { name: "Guild Admin", rank_title: "Administrator" }
-        },
-
-        rpg_metadata: article.rpgMetadata || { 
-            difficulty_level: "NORMAL", 
-            quest_time_minutes: 5, 
-            tags: [] 
-        },
-
-        content_body: article.contentBody || [],
-
-        linked_equipment: article.linkedProducts || { items: [] },
-
-        location_intel: article.location || {},
-
-        social_engagement: {
-            mana_likes: article.likes,
-            views_count: article.views,
-            share_count: 0,
-            comments_count: 0
-        }
-    };
-
-    res.status(200).json({ success: true, data: responseData });
+    res.status(200).json({ success: true, data: article });
   } catch (error) {
-    res.status(500).json({ success: false, message: '讀取卷軸失敗: ' + error.message });
+    res.status(500).json({ success: false, message: '讀取文章內容失敗: ' + error.message });
   }
 };
 
-// ==============================
-// 3. Like Scroll (給予 Mana 讚賞)
-// ==============================
+// ==========================================
+// 4. 按讚 / 取消按讚 (Like Scroll)
+// ==========================================
 const likeScroll = async (req, res) => {
   try {
-    const { id } = req.params; 
+    const { id } = req.params;
     
-    let article = await prisma.article.findUnique({ where: { slug: id } });
-    if (!article) article = await prisma.article.findUnique({ where: { id } });
-    if (!article) return res.status(404).json({ success: false, message: '找不到該卷軸' });
+    const article = await prisma.article.findFirst({
+      where: { OR: [{ id: id }, { slug: id }] }
+    });
 
-    const updated = await prisma.article.update({
+    if (!article) {
+      return res.status(404).json({ success: false, message: '找不到該卷軸文獻' });
+    }
+
+    const updatedArticle = await prisma.article.update({
       where: { id: article.id },
       data: { likes: { increment: 1 } }
     });
 
-    res.status(200).json({ success: true, message: 'Mana 注入成功', likes: updated.likes });
+    res.status(200).json({ 
+      success: true, 
+      message: '已注入魔力 (按讚成功)',
+      likes: updatedArticle.likes
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: '按讚失敗' });
+    res.status(500).json({ success: false, message: '施法失敗: ' + error.message });
   }
 };
 
-// ==============================
-// 4. Categories (取得分類列表)
-// ==============================
-const getCategories = async (req, res) => {
-  try {
-    const categories = [
-        { key: 'SKILL_MANUAL', label: 'Survival Skills' },
-        { key: 'ROUTE_INTEL', label: 'Map & Routes' },
-        { key: 'GEAR_REVIEW', label: 'Equipment Analysis' },
-        { key: 'LORE', label: 'World Lore' }
-    ];
-    res.status(200).json({ success: true, data: categories });
-  } catch (error) {
-    res.status(500).json({ success: false, message: '無法讀取分類' });
-  }
+module.exports = {
+  getCategories,
+  getScrolls,
+  getScrollById,
+  likeScroll
 };
-
-module.exports = { getScrolls, getScrollById, likeScroll, getCategories };
