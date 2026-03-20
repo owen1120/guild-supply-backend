@@ -12,6 +12,7 @@ const questController = require('../controllers/quest.controller');
 const cartController = require('../controllers/cart.controller');
 const orderController = require('../controllers/order.controller');
 const libraryController = require('../controllers/library.controller');
+const faqController = require('../controllers/faq.controller');
 
 // --- 引入後台專用控制器 ---
 const adminOrderController = require('../controllers/adminOrder.controller');
@@ -401,9 +402,18 @@ router.post('/library/scrolls/:id/like', (req, res, next) => {
     next();
 }, libraryController.likeScroll);
 
+// ==============================
+// 🆘 7. Support: 支援中心 (Public)
+// ==============================
+router.get('/support/faqs', (req, res, next) => {
+    // #swagger.tags = ['Support (支援中心)']
+    // #swagger.summary = '取得公會常見問題 (FAQ)'
+    // #swagger.description = '撈取所有已發布 (isPublished: true) 的新手指南，並依 displayOrder 排序'
+    next();
+}, faqController.getFaqs);
 
 // ==============================
-// 🛡️ 7. Admin: 公會長辦公室 (需 Token + Admin權限)
+// 🛡️ 8. Admin: 公會長辦公室 (需 Token + Admin權限)
 // ==============================
 // --- 商品 ---
 router.get('/admin/products', verifyToken, verifyAdmin, (req, res, next) => {

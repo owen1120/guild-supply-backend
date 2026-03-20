@@ -346,3 +346,21 @@ model UserBookmark {
   
   @@unique([userId, articleId]) 
 }
+
+// ==============================
+// 7. Support (Faqs)
+// ==============================
+model Faq {
+  id           String   @id
+  category     String   // 例如: "MEMBERSHIP", "ORDER", "SYSTEM"
+  question     String
+  answer       String   @db.Text // 使用 Text 類型以容納較長的回答內容
+  isPublished  Boolean  @default(true)
+  displayOrder Int      @default(0) // 用於控制前端顯示的排序
+  
+  // JSONB 擴充欄位，對應您的 rpg_flavor_text, tags, icon
+  metadata     Json?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

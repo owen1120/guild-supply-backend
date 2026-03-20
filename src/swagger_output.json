@@ -1777,7 +1777,12 @@
             "type": "string"
           },
           {
-            "name": "tag",
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "page",
             "in": "query",
             "type": "string"
           }
@@ -1841,6 +1846,23 @@
           },
           "404": {
             "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/guild-supply/api/support/faqs": {
+      "get": {
+        "tags": [
+          "Support (支援中心)"
+        ],
+        "summary": "取得公會常見問題 (FAQ)",
+        "description": "撈取所有已發布 (isPublished: true) 的新手指南，並依 displayOrder 排序",
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "500": {
             "description": "Internal Server Error"
